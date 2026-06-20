@@ -22,7 +22,6 @@ resource "aws_subnet" "subnet_a" {
     vpc_id = aws_vpc.main.id
     cidr_block = "10.0.1.0/24"
     availability_zone = "eu-central-1a"
-    route_table_id = aws_route_table.route_table.id
 
     tags = {
         Name = "subnet-a"
@@ -33,7 +32,6 @@ resource "aws_subnet" "subnet_b" {
     vpc_id = aws_vpc.main.id
     cidr_block = "10.0.2.0/24"
     availability_zone = "eu-central-1b"
-    route_table_id = aws_route_table.route_table.id
 
     tags = {
         Name = "subnet-b"
@@ -59,6 +57,16 @@ resource "aws_route_table" "route_table" {
     tags = {
         Name = "route-table"
     }
+}
+
+resource "aws_route_table_association" "rt_to_subnet_a" {
+    subnet_id = aws_subnet.subnet_a.id
+    route_table_id = aws_route_table.route_table.id
+}
+
+resource "aws_route_table_association" "rt_to_subnet_b" {
+    subnet_id = aws_subnet.subnet_b.id
+    route_table_id = aws_route_table.route_table.id
 }
 
 resource "aws_security_group" "sec_group" {
@@ -88,7 +96,7 @@ resource "aws_security_group" "sec_group" {
 
     egress {
         from_port = 0
-        from_port = 0
+        to_port = 0
         protocol = "-1"
         cidr_blocks = ["0.0.0.0/0"]
     }
@@ -99,7 +107,7 @@ resource "aws_instance" "ec2" {
     instance_type = "t3.micro"
     subnet_id = aws_subnet.subnet_a.id
     vpc_security_group_ids = [aws_security_group.sec_group.id]
-    key_name = "keypair"
+    key_name = "pumpkin_key"
     associate_public_ip_address = true
     user_data_replace_on_change = true
     user_data = <<-EOF
